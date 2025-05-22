@@ -153,12 +153,31 @@ client.on(Events.InteractionCreate, async interaction => {
       await interaction.followUp({ content: `⚠️ ${response.data.message}`, ephemeral: true });
     }
   } catch (error) {
-    console.error('Teleport request failed:', error.response?.data || error.message);
-    await interaction.followUp({
-      content: `❌ Failed to send teleport request: ${error.response?.data?.message || error.message}`,
-      ephemeral: true
-    });
+  const raw = error.response?.data;
+
+  // Extract more useful details if available
+  let reason = "Unknown error";
+  if (raw?.errors && Array.isArray(raw.errors)) {
+    reason = raw.errors.map(err => {
+      const code = err.code !== undefined ? `Code ${err.code}` : "No code";
+      const msg = err.message && err.message.length > 0 ? err.message : "No message";
+      return `${code}: ${msg}`;
+    }).join("; ");
+  } else if (typeof raw === 'string') {
+    reason = raw;
+  } else if (typeof raw === 'object') {
+    reason = JSON.stringify(raw);
+  } else {
+    reason = error.message;
   }
+
+  console.error('Teleport request failed:', reason);
+
+  await interaction.followUp({
+    content: `❌ Failed to send teleport request: ${reason}`,
+    ephemeral: true
+  });
+}
 });
 
 //
