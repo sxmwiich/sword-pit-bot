@@ -4,6 +4,16 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const axios = require('axios');
 
+// 🔍 Log public IP for Roblox API allowlist
+(async () => {
+  try {
+    const res = await axios.get('https://api.ipify.org?format=json');
+    console.log(`🌐 Public IP for Open Cloud: ${res.data.ip}`);
+  } catch (err) {
+    console.error('Failed to fetch public IP:', err.message);
+  }
+})();
+
 const client = new Client({
   intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, GatewayIntentBits.MessageContent]
 });
