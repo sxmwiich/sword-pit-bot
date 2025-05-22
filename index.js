@@ -180,6 +180,30 @@ client.on(Events.InteractionCreate, async interaction => {
 }
 });
 
+// ...existing routes and logic...
+
+// In-memory queue for teleport requests
+let pendingTeleports = [];
+
+// POST from bot to queue a teleport request
+app.post('/request-teleport', (req, res) => {
+  const { modUsername, targetUsername, jobId } = req.body;
+
+  if (!modUsername || !targetUsername || !jobId) {
+    return res.status(400).json({ success: false, message: "Missing data" });
+  }
+
+  pendingTeleports.push({ modUsername, targetUsername, jobId });
+  return res.json({ success: true, message: "Teleport queued." });
+});
+
+// GET from Roblox server to poll for teleport requests
+app.get('/poll-teleport', (req, res) => {
+  const data = [...pendingTeleports];
+  pendingTeleports = []; // clear after sending
+  res.json({ requests: data });
+});
+
 //
 // 🔐 Login Discord bot
 //
